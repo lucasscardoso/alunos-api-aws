@@ -18,6 +18,19 @@ Resources:
     Properties:
       BucketName: !Sub "${AWS::AccountId}-${AWS::Region}-upload-image-ecommerce"
 
+  BucketUploadImageEcommercePolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref BucketUploadImageEcommerce
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - s3:GetObject
+            Resource: !Sub "{BucketUploadImageEcommerce.Arn}/*"
+
   CreatePresignedUrlFunction:
     Type: AWS::Serverless::Function
     Properties:
