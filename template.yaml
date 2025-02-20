@@ -39,6 +39,17 @@ Resources:
             Path: /presigned-url
             Method: get
 
+  CategorizeImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: categorize/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Policies:
+        - RekognitionDetectOnlyPolicy: {}
+
 Outputs:
   ApiEcommerce:
     Description: API Gateway endpoint URL for Prod stage for function
