@@ -10,6 +10,9 @@ def lambda_handler(event, context):
     bucket_name = event['Records'][0]['s3']['bucket']['name']
     file_name = event['Records'][0]['s3']['object']['key']
     
+    print(event)
+    print(bucket_name)
+    print(file_name)
 
     # Chama do evento de detecção de labels do rekognition
     response = rekognition_client.detect_labels(
