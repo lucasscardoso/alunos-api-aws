@@ -31,7 +31,8 @@ def lambda_handler(event, context):
             "Bucket": bucket_name,
             "Key": file_name,
             "ContentType": content_type
-        }
+        },
+        ExpiresIn=expiration_time
     )
 
     return {

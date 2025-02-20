@@ -29,6 +29,9 @@ Resources:
       Environment:
         Variables:
           BUCKET_NAME: !Ref BucketUploadImageEcommerce
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref BucketUploadImageEcommerce
       Events:
         ApiEcommerce:
           Type: Api
@@ -39,7 +42,7 @@ Resources:
 Outputs:
   ApiEcommerce:
     Description: API Gateway endpoint URL for Prod stage for function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/presigned-url/"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
   CreatePresignedUrlFunction:
     Description: Lambda Function ARN
     Value: !GetAtt CreatePresignedUrlFunction.Arn
