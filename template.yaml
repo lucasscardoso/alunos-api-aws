@@ -60,6 +60,32 @@ Resources:
   DetectLabelQueue:
     Type: AWS::SQS::Queue
 
+  GenerateContentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: generateContent/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          MODEL_ID: us.anthropic.claude-3-haiku-20240307-v1:0
+          PROMPT_TITLE: "Considere ser um especialista em marketing e copywrite, escreva um titulo chamativo para meu proeduto com base nas etiqutas que irei disponibilizar logo mais. O resultado precisa ser somente o titulo. Deixe claro o que é o produto em seu titulo. Etiquetas: "
+          PROMPT_DESCRIPTION: "a"
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "*"
+        - SQSPollerPolicy:
+            QueueName: !GetAtt DetectLabelQueue.QueueName
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt DetectLabelQueue.Arn
 Outputs:
   ApiEcommerce:
     Description: API Gateway endpoint URL for Prod stage for function

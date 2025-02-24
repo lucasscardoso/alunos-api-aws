@@ -33,11 +33,24 @@ def invoke_bedrock(prompt):
     model_response = json.loads(response['body'].read())
     
     # Recupera o texto da resposta
-    text_response = model_response['content']['0']['text']
+    text_response = model_response['content'][0]['text']
     
     print (text_response)
     
     return text_response
 
 def lambda_handler(event, context):
+    # Capturar evento SQS
+    if 'Records' in event:
+        for record in event['Records']:
+            message_body = json.loads(record['body'])
+            print(message_body)
+            
+            labels = message_body.get('labels',{})
+            
+            prompt_title_final = f"{prompt_title}  Clothing, Shirt, T-Shirt"
+            
+            response = invoke_bedrock(prompt_title_final)
+            
+            print(response)
     
