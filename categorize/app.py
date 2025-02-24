@@ -3,6 +3,7 @@ import boto3 # Importando a biblioteca boto3 para trabalhar com os serviços da 
 import os # Para recuperar variáveis de ambiente
 
 rekognition_client = boto3.client("rekognition") # Instanciando o cliente do Rekognition
+sqs_client = boto3.client('sqs')
 
 def lambda_handler(event, context):
     
@@ -23,6 +24,15 @@ def lambda_handler(event, context):
     
     # Lista de labels detectadas
     labels = [label['Name'] for label in response['Labels']]
+    
+    sqs_client.send_message(
+        QueueUrl=os.environ['SQS_URL'],
+        MessageBody=json.dumps({
+            'bucket': bucket_name,
+            'key': file_name,
+            'labels': labels
+        })
+    )
     
     print(labels)
     

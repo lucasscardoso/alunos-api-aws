@@ -47,10 +47,18 @@ Resources:
       Runtime: python3.9
       Architectures:
         - x86_64
+      Environment:
+        Variables:
+          SQS_URL: !Ref DetectLabelQueue
       Policies:
         - RekognitionDetectOnlyPolicy: {}
         - S3CrudPolicy:
             BucketName: !Ref BucketUploadImageEcommerce
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt DetectLabelQueue.QueueName
+
+  DetectLabelQueue:
+    Type: AWS::SQS::Queue
 
 Outputs:
   ApiEcommerce:
