@@ -25,6 +25,8 @@ def lambda_handler(event, context):
     # Lista de labels detectadas
     labels = [label['Name'] for label in response['Labels']]
     
+    print(labels)
+    
     sqs_client.send_message(
         QueueUrl=os.environ['SQS_URL'],
         MessageBody=json.dumps({
@@ -34,11 +36,3 @@ def lambda_handler(event, context):
         })
     )
     
-    print(labels)
-    
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "Processamento de Labels realizado com sucesso",
-        }),
-    }
