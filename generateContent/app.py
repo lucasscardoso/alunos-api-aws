@@ -75,7 +75,7 @@ def lambda_handler(event, context):
             
             response_title = invoke_bedrock(prompt_title_final)
             
-            prompt_description_final = f"{prompt_description}  {', '.join(labels)} {response_title} "
+            prompt_description_final = f"{prompt_description}  {', '.join(labels)} Titulo do Produto:{response_title} "
             
             response_description = invoke_bedrock(prompt_description_final)
             
