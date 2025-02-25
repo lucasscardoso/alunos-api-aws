@@ -73,3 +73,11 @@ Você também pode usar o AWS Serverless Application Repository para implantar A
 - `Site S3 Uploader`: https://d19xrahy2u07nb.cloudfront.net/
 - `Projeto`: https://github.com/matheus-mprado/alunos-api-aws
 - `PerguntAI`: https://d3qbhhrr5ebjj9.cloudfront.net/course?c=801c639e-ff59-4e85-92b7-b1472c1680ed
+
+## Prompt Site S3 Uploader
+
+Considere ser um engenheiro de software senior que conhece de aws, crie uma página web com react e vite, que ao inserir um link de uma API do aws gateway, e inserir um arquivo, ee vai fazer o trabalho de solicitar uma URL pré assinada do s3 com permissão de put para a chamada do api gateway, e no retorno da url pré assinada, faça o envio do arquivo selecionado via PUT para a URL pré assinada.
+
+Crie de forma minimalista, e seguindo uma UI e UX agradavel, utilizando tons de cinza e melhores práticas de desenvolvimento.
+
+separe em componentes se necessário.
