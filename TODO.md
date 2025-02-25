@@ -8,7 +8,7 @@
 
 - [x] Criar envio de arquivos para o dynamoDB
 - [x] Criar Recursos do dynamoDB no Yaml
-- [] Testar o envio do arquivo para o dynamoDB
+- [x] Testar o envio do arquivo para o dynamoDB
 
 ### 18:45
 
