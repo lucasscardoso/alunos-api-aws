@@ -35,8 +35,6 @@ def invoke_bedrock(prompt):
     # Recupera o texto da resposta
     text_response = model_response['content'][0]['text']
     
-    print (text_response)
-    
     return text_response
 
 def lambda_handler(event, context):
