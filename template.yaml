@@ -81,11 +81,21 @@ Resources:
               Resource: "*"
         - SQSPollerPolicy:
             QueueName: !GetAtt DetectLabelQueue.QueueName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BedrockMetadataImagesS3Table
       Events:
         SQSEvent:
           Type: SQS
           Properties:
             Queue: !GetAtt DetectLabelQueue.Arn
+
+  BedrockMetadataImagesS3Table:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id
+        Type: String
+
 Outputs:
   ApiEcommerce:
     Description: API Gateway endpoint URL for Prod stage for function

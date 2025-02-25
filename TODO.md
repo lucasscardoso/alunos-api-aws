@@ -2,12 +2,12 @@
 
 ## Dia 6
 
-- [] Testar Fluxo de Ontem (Bedrock)
+- [x] Testar Fluxo de Ontem (Bedrock)
 
 ### 18:15
 
-- [] Criar envio de arquivos para o dynamoDB
-- [] Criar Recursos do dynamoDB no Yaml
+- [x] Criar envio de arquivos para o dynamoDB
+- [x] Criar Recursos do dynamoDB no Yaml
 - [] Testar o envio do arquivo para o dynamoDB
 
 ### 18:45

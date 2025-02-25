@@ -19,7 +19,7 @@ def lambda_handler(event, context):
     response = rekognition_client.detect_labels(
         Image={'S3Object': {'Bucket':bucket_name, 'Name': file_name }},
         MaxLabels=10,
-        MinConfidence=80
+        MinConfidence=50
     )
     
     # Lista de labels detectadas
