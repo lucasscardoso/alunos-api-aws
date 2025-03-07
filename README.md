@@ -81,3 +81,17 @@ Considere ser um engenheiro de software senior que conhece de aws, crie uma pág
 Crie de forma minimalista, e seguindo uma UI e UX agradavel, utilizando tons de cinza e melhores práticas de desenvolvimento.
 
 separe em componentes se necessário.
+
+## Configuração do CORS do Bucket S3
+
+```json
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+    "AllowedOrigins": ["*"],
+    "ExposeHeaders": [],
+    "MaxAgeSeconds": 3600
+  }
+]
+```

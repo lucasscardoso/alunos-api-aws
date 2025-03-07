@@ -61,6 +61,9 @@ Resources:
   DetectLabelQueue:
     Type: AWS::SQS::Queue
 
+  ContentDeliveryNotificationTopic:
+    Type: AWS::SNS::Topic
+
   GenerateContentFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -73,8 +76,9 @@ Resources:
         Variables:
           MODEL_ID: us.anthropic.claude-3-haiku-20240307-v1:0
           PROMPT_TITLE: "Considere ser um especialista em marketing e copywrite, escreva um titulo chamativo para meu proeduto com base nas etiqutas que irei disponibilizar logo mais. O resultado precisa ser somente o titulo. Deixe claro o que é o produto em seu titulo. Etiquetas: "
-          PROMPT_DESCRIPTION: "Considere ser um especialista em marketing e copywrite, escreva uma descrição do produto, de forma conseguir convencer o cliente dos seus benefícios e qualidades. utilize as seguintes etiquetas para identificar melhor o produto, como também, utilize o titulo disponível no final do texto. Gere o conteúdo em portugues BR com no máximo 1 paragrafo"
+          PROMPT_DESCRIPTION: "Analise a imagem e gere um titulo com base nas labels(etiquetas) que você vai receber e gere uma descrição dos beneficios e qualidades do produto,seja especifico sobre o produto e chamativo, você vai precisar assumir o papel de especialista de marketing digital e direitos autorais, essa descrição precisa ser em português pt br"
           TABLE_NAME: !Ref BedrockMetadataImagesS3Table
+          SNS_TOPIC_ARN: !Ref ContentDeliveryNotificationTopic
       Policies:
         - Statement:
             - Effect: Allow
@@ -85,6 +89,8 @@ Resources:
             QueueName: !GetAtt DetectLabelQueue.QueueName
         - DynamoDBCrudPolicy:
             TableName: !Ref BedrockMetadataImagesS3Table
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt ContentDeliveryNotificationTopic.TopicName
       Events:
         SQSEvent:
           Type: SQS

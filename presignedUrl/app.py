@@ -40,7 +40,7 @@ def lambda_handler(event, context):
         'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
-            },
+        },
         "body": json.dumps({
             "message": "Url pré assinada criada com sucesso",
             "url": presigned_url,

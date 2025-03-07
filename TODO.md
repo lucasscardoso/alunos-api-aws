@@ -12,7 +12,7 @@
 
 ### 18:45
 
-- [] Adicionar CORS na lambda de pre-signed URL
+- [x] Adicionar CORS na lambda de pre-signed URL
 
 ### 19:00
 
@@ -23,6 +23,6 @@
 
 ### 19:45
 
-- [] Explicação do Desafio Técnico
+- [x] Explicação do Desafio Técnico
 
 ### 20:00

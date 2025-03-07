@@ -6,16 +6,27 @@ from datetime import datetime # Fornecer funcionalidades de tempo para utilizar 
 
 bedrock_client = boto3.client("bedrock-runtime")
 dynamodb_resource = boto3.resource("dynamodb")
+sns_client = boto3.client("sns")
 
 model_id = os.environ['MODEL_ID'] # ID do modelo de Machine Learning criado no Bedrock
 prompt_title = os.environ['PROMPT_TITLE'] # Título do prompt criado no Bedrock
 prompt_description = os.environ['PROMPT_DESCRIPTION'] # Descrição do prompt criado no Bedrock
 table_name = os.environ['TABLE_NAME'] # Nomeda Tabela do DynamoDB
+sns_topic_arn = os.environ['SNS_TOPIC_ARN'] # Amazon Resource Name do Tópico SNS
 
 # Partition Key = Chave Primária
 # Sort Key (Chave de Classificação) -> Ajudar na Ordenação.
 
 table = dynamodb_resource.Table(table_name)
+
+def send_sms_notification(title, item_id):
+    
+    message = f"Conteúdo {title} gerado. ID: {item_id}"
+    
+    sns_client.publish(
+        TopicArn=sns_topic_arn,
+        Message=message
+    )
 
 def save_to_dynamodb(title, content, labels):
     item_id = str(uuid.uuid4())
@@ -83,4 +94,6 @@ def lambda_handler(event, context):
             print(response_description)
             
             item_id = save_to_dynamodb(response_title,response_description, labels)
+            
+            send_sms_notification(response_title,item_id)
     
