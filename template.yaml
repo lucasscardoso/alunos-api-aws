@@ -1,116 +1,243 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
   alunos-api-aws
 
   Sample SAM Template for alunos-api-aws
 
+
 Globals:
   Function:
-    Timeout: 15
+    Timeout: 35
     MemorySize: 128
+
+    
     LoggingConfig:
       LogFormat: JSON
-
 Resources:
-  BucketUploadImageEcommerce:
+  BucketUploadImageEcomerce:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${AWS::AccountId}-${AWS::Region}-upload-image-ecommerce"
+      BucketName: !Sub "${AWS::AccountId}-${AWS::Region}-upload-image-ecomerce"
+  
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: UsersCognito
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
 
-  CreatePresignedUrlFunction:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: CadClientUserPool
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Name: email
+          Required: true
+        - Name: birthdate
+          AttributeDataType: String
+          Mutable: true
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_LINK
+        EmailSubject: 'Confirme seu cadastro'
+        EmailMessage: 'Clique no link para confirmar seu cadastro e seguir com seu Login! {####}'
+      LambdaConfig:
+        PostConfirmation: !GetAtt RegisterUserFunction.Arn
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: AwsAppDesafioClient
+      AllowedOAuthFlowsUserPoolClient: true
+      CallbackURLs:
+        - 'https://d84hoc2mx2h5u.cloudfront.net'
+      LogoutURLs:
+        - 'https://appuploadfotos.auth.us-east-2.amazoncognito.com/login?client_id=56mqhid3utemfik3scev2kee87&redirect_uri=https://d84hoc2mx2h5u.cloudfront.net&response_type=code&scope=email+openid+phone+profile'
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - phone
+        - email
+        - openid
+        - profile
+      SupportedIdentityProviders:
+        - COGNITO 
+
+  RegisterUserFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref RegisterUserFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt UserPool.Arn
+  
+
+  RegisterUserFunction:
     Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: registerUser/
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      Environment:
+        Variables:
+          USERS_TABLE_NAME: !Ref UsersTable
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref UsersTable
+
+
+  CreatPresignedUrlFunction:
+    Type: AWS::Serverless::Function 
     Properties:
       CodeUri: presignedUrl/
       Handler: app.lambda_handler
-      Runtime: python3.9
-      Timeout: 3
+      Runtime: python3.13
       Architectures:
-        - x86_64
+      - x86_64
       Environment:
         Variables:
-          BUCKET_NAME: !Ref BucketUploadImageEcommerce
+          BUCKET_NAME: !Ref BucketUploadImageEcomerce
+      
+
       Policies:
         - S3CrudPolicy:
-            BucketName: !Ref BucketUploadImageEcommerce
+            BucketName: !Ref BucketUploadImageEcomerce
       Events:
         ApiEcommerce:
-          Type: Api
+          Type: Api 
           Properties:
             Path: /presigned-url
             Method: get
 
   CategorizeImageFunction:
-    Type: AWS::Serverless::Function
+    Type: AWS::Serverless::Function 
     Properties:
       CodeUri: categorize/
       Handler: app.lambda_handler
-      Runtime: python3.9
+      Runtime: python3.13
       Architectures:
-        - x86_64
+      - x86_64
       Environment:
         Variables:
-          SQS_URL: !Ref DetectLabelQueue
+          SQS_URL: !Ref DetectedLabelQueue  
       Policies:
         - RekognitionDetectOnlyPolicy: {}
         - S3CrudPolicy:
-            BucketName: !Ref BucketUploadImageEcommerce
+            BucketName: !Ref BucketUploadImageEcomerce
         - SQSSendMessagePolicy:
-            QueueName: !GetAtt DetectLabelQueue.QueueName
+            QueueName: !GetAtt DetectedLabelQueue.QueueName
 
-  DetectLabelQueue:
+  DetectedLabelQueue:
     Type: AWS::SQS::Queue
-
-  ContentDeliveryNotificationTopic:
+ 
+  ContentDeliveryNotifictionTopic:
     Type: AWS::SNS::Topic
 
   GenerateContentFunction:
-    Type: AWS::Serverless::Function
+    Type: AWS::Serverless::Function 
     Properties:
       CodeUri: generateContent/
       Handler: app.lambda_handler
-      Runtime: python3.9
+      Runtime: python3.13
       Architectures:
-        - x86_64
+      - x86_64
       Environment:
         Variables:
-          MODEL_ID: us.anthropic.claude-3-haiku-20240307-v1:0
-          PROMPT_TITLE: "Considere ser um especialista em marketing e copywrite, escreva um titulo chamativo para meu proeduto com base nas etiqutas que irei disponibilizar logo mais. O resultado precisa ser somente o titulo. Deixe claro o que é o produto em seu titulo. Etiquetas: "
-          PROMPT_DESCRIPTION: "Analise a imagem e gere um titulo com base nas labels(etiquetas) que você vai receber e gere uma descrição dos beneficios e qualidades do produto,seja especifico sobre o produto e chamativo, você vai precisar assumir o papel de especialista de marketing digital e direitos autorais, essa descrição precisa ser em português pt br"
-          TABLE_NAME: !Ref BedrockMetadataImagesS3Table
-          SNS_TOPIC_ARN: !Ref ContentDeliveryNotificationTopic
+          MODEL_ID: us.anthropic.claude-3-5-haiku-20241022-v1:0
+          PROMPT_TITLE: "Analise a imagem e gere um titulo com base nas labels(etiquetas) que você vai receber, precisa ser um nome que seja especifico sobre o produto e chamativo, você vai precisar assumir o papel de especialista de marketing digital e direitos autorais, esse titulo precisa ser em português pt br, lembrando deixe claro o que é o produto em seu titulo e retorne somente o titulo, labels(etiquetas): " 
+          PROMPT_DESCRIPTION: "Analise as labels(etiquetas) que você vai receber e gere uma descrição dos beneficios e qualidades do produto,seja especifico sobre o produto e chamativo, você vai precisar assumir o papel de especialista de marketing digital e direitos autorais, essa descrição precisa ser em português pt br, gere no maximo 20 caracteres, nao use emojis, utilize o titulo:  "
+          TABLE_NAME: !Ref BedrockMetadataImagesS3table
+          SNS_TOPIC_ARN: !Ref ContentDeliveryNotifictionTopic
       Policies:
         - Statement:
             - Effect: Allow
               Action:
                 - bedrock:InvokeModel
-              Resource: "*"
+              Resource: "*"             
         - SQSPollerPolicy:
-            QueueName: !GetAtt DetectLabelQueue.QueueName
+            QueueName: !GetAtt DetectedLabelQueue.QueueName  
         - DynamoDBCrudPolicy:
-            TableName: !Ref BedrockMetadataImagesS3Table
+            TableName: !Ref BedrockMetadataImagesS3table  
         - SNSPublishMessagePolicy:
-            TopicName: !GetAtt ContentDeliveryNotificationTopic.TopicName
+            TopicName: !GetAtt ContentDeliveryNotifictionTopic.TopicName      
       Events:
         SQSEvent:
           Type: SQS
           Properties:
-            Queue: !GetAtt DetectLabelQueue.Arn
-
-  BedrockMetadataImagesS3Table:
+            Queue: !GetAtt DetectedLabelQueue.Arn  
+  BedrockMetadataImagesS3table:
     Type: AWS::Serverless::SimpleTable
-    Properties:
+    Properties:      
       PrimaryKey:
         Name: id
-        Type: String
+        Type: String    
 
+  GetAllProducts:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: DbContent/
+            Handler: app.lambda_handler
+            Runtime: python3.13
+            Policies:
+                - DynamoDBReadPolicy:
+                    TableName: !Ref BedrockMetadataImagesS3table
+            Events:
+                Api:
+                    Type: Api
+                    Properties:
+                        Path: /products
+                        Method: GET
+            Environment:
+                Variables:
+                    TABLE_NAME: !Ref BedrockMetadataImagesS3table
+
+  GetProductById:
+        Type: AWS::Serverless::Function
+        Properties:
+          CodeUri: DbContent/
+          Handler: app.lambda_handler
+          Runtime: python3.13
+          Policies:
+            - DynamoDBReadPolicy:
+                TableName: !Ref BedrockMetadataImagesS3table
+          Events:
+            Api:
+              Type: Api
+              Properties:
+                Path: /products/{id}
+                Method: GET 
+          Environment:
+                Variables:
+                    TABLE_NAME: !Ref BedrockMetadataImagesS3table                  
+    
 Outputs:
+
   ApiEcommerce:
-    Description: API Gateway endpoint URL for Prod stage for function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
-  CreatePresignedUrlFunction:
-    Description: Lambda Function ARN
-    Value: !GetAtt CreatePresignedUrlFunction.Arn
-  CreatePresignedUrlFunctionIamRole:
+    Description: API Gateway endpoint URL for Prod stage for Hello World function
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/presigned-url/"
+  CreatPresignedUrlFunction:
+    Description: Creat Presigned Url Function Function ARN
+    Value: !GetAtt CreatPresignedUrlFunction.Arn
+  CreatPresignedUrlFunctionIamRole:
     Description: Implicit IAM Role created for function
-    Value: !GetAtt CreatePresignedUrlFunction.Arn
+    Value: !GetAtt CreatPresignedUrlFunction.Arn
+  GetAllProducts: 
+    Description: Get All Products Function ARN
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/products/"
