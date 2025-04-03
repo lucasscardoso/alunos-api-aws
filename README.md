@@ -1,97 +1,76 @@
-# alunos-api-aws
+# api-aws
 
-Este projeto contém o código-fonte e arquivos de suporte para uma aplicação serverless que pode ser implantada com o SAM CLI. Ele inclui os seguintes arquivos e pastas:
+Este projeto é uma API Serverless construída com AWS SAM (Serverless Application Model). Ele inclui funcionalidades para upload de imagens, categorização, autenticação de usuários e recuperação de produtos.
+Escolhi a implementação do cognito para autenticação de usuarios por motivos de aprendizado/segurança, fiquei interessado sobre a criação de uma pool de usuarios, onde voce tem controle sobre a criação e permições, as formas que o cognito te disponibiliza , até mesmo disponibilizando uma pagina web customizavel, meu projeto tem o intuito de ter uma front end, ele esta hospedado em um bucket s3 e foi criado a conexão com cloudfront, o cognito esta a frente de tudo, foi incrivel perceber que podemos criar triggers em tudo, inclusive ao ser criado um usuario, o lambda armanezar informações como o email, data de aniversario e data de criação.
 
-- `categorize` - Código para a função Lambda que categoriza imagens.
-- `generateContent` - Código para a função Lambda que gera conteúdo usando o Bedrock.
-- `presignedUrl` - Código para a função Lambda que gera URLs pré-assinadas para upload de arquivos no S3.
-- `events` - Eventos de invocação que podem ser usados para invocar a função.
-- `template.yaml` - Um template que define os recursos AWS da aplicação.
-- `README.md` - Documentação do projeto.
-- `TODO.md` - Lista de tarefas a serem realizadas.
+## 📌 Visão Geral
 
-## Estrutura do Projeto
+A aplicação utiliza vários serviços da AWS, incluindo:
+- **S3** para armazenamento de imagens.
+- **DynamoDB** para armazenar metadados.
+- **Cognito** para autenticação de usuários.
+- **Lambda** para execução de funções serverless.
+- **SQS** para processamento assíncrono.
+- **SNS** para notificações.
 
-### Categorize
+## 🚀 Recursos
 
-A função Lambda em `categorize/app.py` é responsável por detectar labels em imagens enviadas para um bucket S3 usando o Amazon Rekognition. As labels detectadas são enviadas para uma fila SQS.
+### 1️⃣ Upload de Imagem
+Armazena imagens no **S3** e gera URLs pré-assinadas para upload.
 
-### Generate Content
+### 2️⃣ Autenticação de Usuário
+Gerenciado pelo **Cognito**, permitindo login com email e senha.
 
-A função Lambda em `generateContent/app.py` é responsável por gerar conteúdo usando o Bedrock com base nas labels detectadas e enviadas para a fila SQS.
+### 3️⃣ Categorização de Imagem
+Usa **AWS Rekognition** para identificar labels e enviar para **SQS**.
 
-### Presigned URL
+### 4️⃣ Geração de Conteúdo
+Utiliza **AWS Bedrock** para criar descrições e títulos de produtos com base nas imagens enviadas.
 
-A função Lambda em `presignedUrl/app.py` é responsável por gerar URLs pré-assinadas para upload de arquivos no S3.
+### 5️⃣ Gerenciamento de Produtos
+Permite buscar produtos armazenados no **DynamoDB** via API.
 
-## Recursos AWS
+## 🛠 Tecnologias Utilizadas
+- **AWS SAM** (Serverless Application Model)
+- **AWS Lambda**
+- **Amazon S3**
+- **Amazon DynamoDB**
+- **Amazon Cognito**
+- **Amazon Rekognition**
+- **Amazon SQS**
+- **Amazon SNS**
+- **AWS Bedrock**
 
-Os recursos AWS são definidos no arquivo `template.yaml`. Este arquivo inclui definições para:
+## 📂 Estrutura do Projeto
 
-- Bucket S3 para upload de imagens.
-- Funções Lambda para categorizar imagens, gerar conteúdo e criar URLs pré-assinadas.
-- Fila SQS para comunicação entre as funções Lambda.
+![Diagrama do projeto original](/assets/Diagrama.png)
 
-## Implantação
+## 🔧 Instalação e Deploy
+### 1️⃣ Pré-requisitos
+Certifique-se de ter instalado:
+- AWS CLI configurado
+- AWS SAM CLI
+- Python 3.13
 
-Para implantar a aplicação pela primeira vez, execute os seguintes comandos no seu terminal:
+### 2️⃣ Construção do Projeto
+```sh
+sam build
+```
 
-```bash
-sam build --use-container
+### 3️⃣ Implantação
+```sh
 sam deploy --guided
 ```
 
-## Testes
+## 📌 Endpoints da API
+| Rota                  | Método | Descrição |
+|-----------------------|--------|-----------|
+| `/presigned-url`      | GET    | Gera uma URL pré-assinada para upload de imagem |
+| `/products`           | GET    | Retorna todos os produtos |
+| `/products/{id}`      | GET    | Retorna detalhes de um produto específico |
 
-Os testes são definidos na pasta tests deste projeto. Use o PIP para instalar as dependências de teste e executar os testes.
+## 🔑 Autenticação
+Os usuários devem se autenticar via Cognito para acessar funcionalidades protegidas.
 
-```bash
-pip install -r tests/requirements.txt --user
-# Teste unitário
-python -m pytest tests/unit -v
-# Teste de integração, requerendo a implantação do stack primeiro.
-# Crie a variável de ambiente AWS_SAM_STACK_NAME com o nome do stack que estamos testando
-AWS_SAM_STACK_NAME="alunos-api-aws" python -m pytest tests/integration -v
-```
+📢 **Observação:** Certifique-se de configurar corretamente suas credenciais AWS antes de implantar este projeto!
 
-## Limpeza
-
-Para deletar a aplicação de exemplo que você criou, use o AWS CLI. Supondo que você usou o nome do seu projeto para o nome do stack, você pode executar o seguinte comando:
-
-```bash
-sam delete --stack-name "alunos-api-aws"
-```
-
-## Recursos
-
-Veja o guia do desenvolvedor AWS SAM para uma introdução à especificação SAM, ao SAM CLI e aos conceitos de aplicação serverless.
-
-Você também pode usar o AWS Serverless Application Repository para implantar Apps prontos para uso que vão além dos exemplos de hello world e aprender como os autores desenvolveram suas aplicações: AWS Serverless Application Repository main page
-
-# Links Uteis
-
-- `Site S3 Uploader`: https://d19xrahy2u07nb.cloudfront.net/
-- `Projeto`: https://github.com/matheus-mprado/alunos-api-aws
-- `PerguntAI`: https://d3qbhhrr5ebjj9.cloudfront.net/course?c=801c639e-ff59-4e85-92b7-b1472c1680ed
-
-## Prompt Site S3 Uploader
-
-Considere ser um engenheiro de software senior que conhece de aws, crie uma página web com react e vite, que ao inserir um link de uma API do aws gateway, e inserir um arquivo, ee vai fazer o trabalho de solicitar uma URL pré assinada do s3 com permissão de put para a chamada do api gateway, e no retorno da url pré assinada, faça o envio do arquivo selecionado via PUT para a URL pré assinada.
-
-Crie de forma minimalista, e seguindo uma UI e UX agradavel, utilizando tons de cinza e melhores práticas de desenvolvimento.
-
-separe em componentes se necessário.
-
-## Configuração do CORS do Bucket S3
-
-```json
-[
-  {
-    "AllowedHeaders": ["*"],
-    "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
-    "AllowedOrigins": ["*"],
-    "ExposeHeaders": [],
-    "MaxAgeSeconds": 3600
-  }
-]
-```
